@@ -73,14 +73,14 @@ export function ScrollWaypointCamera2({ onEnd, onProgress }) {
     }, 500);
 
     // Aplicar inercia al scroll (permite dirección positiva Y negativa)
-    smoothScrollVelocity.current *= 0.85; // Decaimiento de velocidad
-    smoothScrollVelocity.current += delta * 0.0004; // Sensibilidad para ambas direcciones
+    smoothScrollVelocity.current *= 0.92; // Decaimiento de velocidad más suave
+    smoothScrollVelocity.current += delta * 0.0001; // Sensibilidad reducida significativamente
 
-    // Limitar velocidad máxima en ambas direcciones
+    // Limitar velocidad máxima en ambas direcciones (más lento)
     smoothScrollVelocity.current = THREE.MathUtils.clamp(
       smoothScrollVelocity.current,
-      -0.01, // Velocidad hacia atrás
-      0.01 // Velocidad hacia adelante
+      -0.003, // Velocidad hacia atrás más lenta
+      0.003 // Velocidad hacia adelante más lenta
     );
 
     // Actualizar offset permitiendo ir hacia atrás (0) y adelante (1)
@@ -110,8 +110,8 @@ export function ScrollWaypointCamera2({ onEnd, onProgress }) {
         const deltaY = lastY - currentY; // Positivo = hacia adelante, Negativo = hacia atrás
 
         // Suavizar el movimiento touch manteniendo la dirección
-        touchVelocity = touchVelocity * 0.7 + deltaY * 0.3;
-        smoothScroll(touchVelocity * 1.5); // Factor reducido para mejor control
+        touchVelocity = touchVelocity * 0.8 + deltaY * 0.2;
+        smoothScroll(touchVelocity * 0.5); // Factor reducido para mejor control móvil
 
         lastY = currentY;
       }
@@ -121,9 +121,9 @@ export function ScrollWaypointCamera2({ onEnd, onProgress }) {
       lastY = null;
       // Aplicar inercia al finalizar el touch
       const inertiaDecay = () => {
-        if (Math.abs(touchVelocity) > 0.5) {
-          smoothScroll(touchVelocity);
-          touchVelocity *= 0.9;
+        if (Math.abs(touchVelocity) > 0.2) { // Umbral más bajo
+          smoothScroll(touchVelocity * 0.3); // Inercia más suave
+          touchVelocity *= 0.95; // Decaimiento más gradual
           requestAnimationFrame(inertiaDecay);
         }
       };
@@ -154,7 +154,7 @@ export function ScrollWaypointCamera2({ onEnd, onProgress }) {
     // Interpolación más suave y adaptativa
     const targetOffset = scrollOffset.current;
     const lerpSpeed =
-      Math.abs(targetOffset - currentOffset.current) > 0.1 ? 0.08 : 0.12;
+      Math.abs(targetOffset - currentOffset.current) > 0.1 ? 0.04 : 0.06; // Velocidades más lentas
 
     currentOffset.current = THREE.MathUtils.lerp(
       currentOffset.current,
@@ -195,14 +195,14 @@ export function ScrollWaypointCamera2({ onEnd, onProgress }) {
     }
 
     // Aplicar transformaciones suaves
-    camera.position.lerp(pos, 0.15);
+    camera.position.lerp(pos, 0.08); // Movimiento más suave
 
     // LookAt suave con damping
     const currentLookDirection = camera.getWorldDirection(new THREE.Vector3());
     const targetLookDirection = target.clone().sub(camera.position).normalize();
     const smoothLookDirection = currentLookDirection.lerp(
       targetLookDirection,
-      0.1
+      0.05 // Rotación más suave
     );
 
     const lookAtPoint = camera.position.clone().add(smoothLookDirection);

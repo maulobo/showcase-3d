@@ -73,12 +73,13 @@ function FPSMonitor() {
 }
 
 // Componente de modelo optimizado con diagnóstico
-function ModeloGLB({ url = "/ok.glb", ...props }) {
+function ModeloGLB({ url = "/ok.glb", onModelReady, ...props }) {
   const { scene, materials } = useGLTF(url);
+  const [isProcessed, setIsProcessed] = useState(false);
 
   // Diagnóstico COMPLETO del modelo GLTF
   useEffect(() => {
-    if (scene) {
+    if (scene && !isProcessed) {
       console.group("🔍 DIAGNÓSTICO COMPLETO DEL MODELO GLTF");
 
       let totalVertices = 0;
@@ -263,6 +264,14 @@ function ModeloGLB({ url = "/ok.glb", ...props }) {
       console.log(`   5. 🎨 Materiales: Combinar similares en atlas`);
 
       console.groupEnd();
+      setIsProcessed(true);
+      
+      // Notificar que el modelo está listo
+      if (onModelReady) {
+        setTimeout(() => {
+          onModelReady();
+        }, 100);
+      }
     }
 
     // Optimizar materiales para mejor rendimiento
@@ -287,14 +296,32 @@ function ModeloGLB({ url = "/ok.glb", ...props }) {
         }
       });
     }
-  }, [scene, materials]);
+  }, [scene, materials, isProcessed, onModelReady]);
 
   return <primitive object={scene} {...props} />;
 }
 
-// Loader customizado con mejor diseño
+// Loader customizado con mejor diseño y progreso más preciso
 const CustomLoader = () => {
-  const { progress } = useProgress();
+  const { progress, active, loaded, total } = useProgress();
+  const [loadingPhase, setLoadingPhase] = useState("Iniciando...");
+  const [showDetails, setShowDetails] = useState(false);
+
+  useEffect(() => {
+    if (progress < 10) {
+      setLoadingPhase("Conectando...");
+    } else if (progress < 30) {
+      setLoadingPhase("Descargando modelo...");
+    } else if (progress < 60) {
+      setLoadingPhase("Procesando geometría...");
+    } else if (progress < 85) {
+      setLoadingPhase("Cargando texturas...");
+    } else if (progress < 95) {
+      setLoadingPhase("Optimizando...");
+    } else {
+      setLoadingPhase("Finalizando...");
+    }
+  }, [progress]);
 
   return (
     <div
@@ -305,7 +332,7 @@ const CustomLoader = () => {
         width: "100vw",
         height: "100vh",
         background:
-          "linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%)",
+          "linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 40%, #16213e 80%, #0f172a 100%)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -313,38 +340,198 @@ const CustomLoader = () => {
         zIndex: 1000,
         color: "#fff",
         fontFamily: "'Inter', sans-serif",
+        overflow: "hidden",
       }}
     >
+      {/* Animación de fondo */}
       <div
         style={{
-          width: "280px",
-          height: "6px",
-          background: "rgba(255,255,255,0.1)",
-          borderRadius: "10px",
-          overflow: "hidden",
-          marginBottom: "20px",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          background: `radial-gradient(circle at ${progress}% 50%, rgba(0,212,255,0.1) 0%, transparent 50%)`,
+          animation: "pulse 2s ease-in-out infinite",
+        }}
+      />
+
+      {/* Logo o título */}
+      <div
+        style={{
+          marginBottom: "3rem",
+          textAlign: "center",
+        }}
+      >
+        <h1
+          style={{
+            fontSize: "2.5rem",
+            fontWeight: 700,
+            margin: 0,
+            marginBottom: "0.5rem",
+            background: "linear-gradient(45deg, #00d4ff, #ff00a8)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
+        >
+          3D Show
+        </h1>
+        <p
+          style={{
+            fontSize: "1.1rem",
+            margin: 0,
+            opacity: 0.7,
+            fontWeight: 400,
+          }}
+        >
+          Experiencia inmersiva
+        </p>
+      </div>
+
+      {/* Barra de progreso mejorada */}
+      <div
+        style={{
+          width: "320px",
+          marginBottom: "2rem",
         }}
       >
         <div
           style={{
-            width: `${progress}%`,
-            height: "100%",
-            background: "linear-gradient(90deg, #00d4ff, #ff00a8)",
-            borderRadius: "10px",
-            transition: "width 0.3s ease",
+            width: "100%",
+            height: "8px",
+            background: "rgba(255,255,255,0.1)",
+            borderRadius: "12px",
+            overflow: "hidden",
+            marginBottom: "1rem",
+            position: "relative",
           }}
-        />
+        >
+          <div
+            style={{
+              width: `${progress}%`,
+              height: "100%",
+              background: "linear-gradient(90deg, #00d4ff, #0080ff, #ff00a8)",
+              borderRadius: "12px",
+              transition: "width 0.5s ease",
+              position: "relative",
+            }}
+          >
+            {/* Animación de brillo */}
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                background:
+                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+                animation: progress > 0 ? "shimmer 1.5s infinite" : "none",
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Información de progreso */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "1rem",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "1.1rem",
+              fontWeight: 600,
+              color: "#00d4ff",
+            }}
+          >
+            {Math.round(progress)}%
+          </span>
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            style={{
+              background: "none",
+              border: "1px solid rgba(255,255,255,0.2)",
+              color: "rgba(255,255,255,0.7)",
+              padding: "0.25rem 0.5rem",
+              borderRadius: "4px",
+              fontSize: "0.8rem",
+              cursor: "pointer",
+            }}
+          >
+            {showDetails ? "Ocultar" : "Detalles"}
+          </button>
+        </div>
       </div>
+
+      {/* Fase de carga */}
       <p
         style={{
-          fontSize: "1.1rem",
+          fontSize: "1.2rem",
           fontWeight: 500,
           margin: 0,
+          marginBottom: "1rem",
           opacity: 0.9,
+          textAlign: "center",
         }}
       >
-        Cargando modelo 3D... {Math.round(progress)}%
+        {loadingPhase}
       </p>
+
+      {/* Detalles técnicos (opcionales) */}
+      {showDetails && (
+        <div
+          style={{
+            background: "rgba(0,0,0,0.3)",
+            padding: "1rem",
+            borderRadius: "8px",
+            fontSize: "0.9rem",
+            opacity: 0.8,
+            textAlign: "center",
+            border: "1px solid rgba(255,255,255,0.1)",
+          }}
+        >
+          <div>
+            Archivos cargados: {loaded} / {total}
+          </div>
+          <div>Estado: {active ? "Cargando..." : "Procesando..."}</div>
+        </div>
+      )}
+
+      {/* Spinner sutil */}
+      <div
+        style={{
+          width: "40px",
+          height: "40px",
+          border: "2px solid rgba(255,255,255,0.1)",
+          borderTop: "2px solid #00d4ff",
+          borderRadius: "50%",
+          animation: "spin 1s linear infinite",
+          marginTop: "1rem",
+        }}
+      />
+
+      {/* Estilos CSS inline para animaciones */}
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+          }
+          @keyframes pulse {
+            0%, 100% { opacity: 0.1; }
+            50% { opacity: 0.2; }
+          }
+        `}
+      </style>
     </div>
   );
 };
@@ -352,10 +539,12 @@ const CustomLoader = () => {
 export default function VisorGLB() {
   const [isTouch, setIsTouch] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isModelReady, setIsModelReady] = useState(false);
   const canvasRef = useRef();
 
   // Preload y cleanup optimizado
   useEffect(() => {
+    // Precargar el modelo
     useGLTF.preload("/ok.glb");
 
     return () => {
@@ -408,34 +597,38 @@ export default function VisorGLB() {
       {/* Componente BackToHome - Botón para regresar al home de visores */}
       <BackToHome position="top-left" />
 
-      {!isLoaded && <CustomLoader />}
+      {/* Mostrar loader hasta que el modelo esté completamente listo */}
+      {(!isLoaded || !isModelReady) && <CustomLoader />}
 
-      {/* Monitor de FPS fuera del Canvas */}
-      <FPSMonitor />
+      {/* Monitor de FPS fuera del Canvas - solo mostrar cuando esté cargado */}
+      {isLoaded && isModelReady && <FPSMonitor />}
 
-      {/* Instrucciones de scroll mejoradas */}
-      <div
-        style={{
-          position: "fixed",
-          top: "20px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          background: "rgba(0, 0, 0, 0.85)",
-          backdropFilter: "blur(10px)",
-          color: "white",
-          fontWeight: 600,
-          padding: "12px 24px",
-          borderRadius: "16px",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
-          zIndex: 50,
-          pointerEvents: "none",
-          fontFamily: "'Inter', sans-serif",
-          fontSize: "0.95rem",
-          border: "1px solid rgba(255,255,255,0.1)",
-        }}
-      >
-        {isTouch ? "👆 Desliza para explorar" : "🖱️ Scroll para explorar"}
-      </div>
+      {/* Instrucciones de scroll mejoradas - solo mostrar cuando esté cargado */}
+      {isLoaded && isModelReady && (
+        <div
+          style={{
+            position: "fixed",
+            top: "20px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "rgba(0, 0, 0, 0.85)",
+            backdropFilter: "blur(10px)",
+            color: "white",
+            fontWeight: 600,
+            padding: "12px 24px",
+            borderRadius: "16px",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+            zIndex: 50,
+            pointerEvents: "none",
+            fontFamily: "'Inter', sans-serif",
+            fontSize: "0.95rem",
+            border: "1px solid rgba(255,255,255,0.1)",
+            animation: "fadeIn 0.5s ease-in-out",
+          }}
+        >
+          {isTouch ? "👆 Desliza para explorar" : "🖱️ Scroll para explorar"}
+        </div>
+      )}
 
       <Canvas
         ref={canvasRef}
@@ -446,9 +639,13 @@ export default function VisorGLB() {
           width: "100vw",
           height: "100vh",
           zIndex: 1,
+          opacity: isLoaded && isModelReady ? 1 : 0,
+          transition: "opacity 0.5s ease-in-out",
         }}
         {...canvasConfig}
-        onCreated={() => setIsLoaded(true)}
+        onCreated={() => {
+          setIsLoaded(true);
+        }}
       >
         {/* Cámara con scroll */}
         <ScrollWaypointCamera2 />
@@ -464,11 +661,21 @@ export default function VisorGLB() {
         <Stats />
 
         <Suspense fallback={null}>
-          <ModeloGLB />
+          <ModeloGLB onModelReady={() => setIsModelReady(true)} />
         </Suspense>
 
         <Preload all />
       </Canvas>
+
+      {/* Estilos CSS para animaciones */}
+      <style>
+        {`
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+          }
+        `}
+      </style>
     </>
   );
 }
