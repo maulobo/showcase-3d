@@ -1,7 +1,7 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Home from './components/Home'
-import Departamento from './components/departamento'
-import './App.css'
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "./components/Home";
+import Departamento from "./components/departamento";
+import "./App.css";
 
 function App() {
   return (
@@ -11,7 +11,7 @@ function App() {
         <Route path="/departamento" element={<Departamento />} />
       </Routes>
     </Router>
-  )
+  );
 }
 
-export default App
+export default App;

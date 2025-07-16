@@ -265,7 +265,7 @@ function ModeloGLB({ url = "/ok.glb", onModelReady, ...props }) {
 
       console.groupEnd();
       setIsProcessed(true);
-      
+
       // Notificar que el modelo está listo
       if (onModelReady) {
         setTimeout(() => {
