@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 function Home() {
   return (
     <div style={{ textAlign: "center", padding: "2rem" }}>
-      <h1>Bienvenido a 3D Show</h1>
-      <p>Explora nuestras visualizaciones 3D</p>
       <div style={{ marginTop: "2rem" }}>
         <Link
           to="/departamento"
