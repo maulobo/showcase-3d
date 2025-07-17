@@ -55,7 +55,7 @@ function LoadingComponent() {
     <Html center>
       <div
         style={{
-          background: "rgba(0, 0, 0, 0.8)",
+          background: "rgba(0, 1, 0, 0.8)",
           color: "white",
           padding: "20px 30px",
           borderRadius: "10px",
