@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./components/Home";
-import Departamento from "./components/departamento";
-import Edificio from "./components/edificio";
+import DepartamentoAdaptive from "./components/DepartamentoAdaptive";
+import EdificioAdaptive from "./components/EdificioAdaptive";
 import "./App.css";
 
 function App() {
@@ -9,8 +9,8 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/departamento" element={<Departamento />} />
-        <Route path="/edificio" element={<Edificio />} />
+        <Route path="/departamento" element={<DepartamentoAdaptive />} />
+        <Route path="/edificio" element={<EdificioAdaptive />} />
       </Routes>
     </Router>
   );
