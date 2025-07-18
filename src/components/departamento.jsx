@@ -83,14 +83,9 @@ function ModeloGLB({ url = "/ok.glb", onModelReady, ...props }) {
     if (scene && !isProcessed) {
       console.group("🔍 DIAGNÓSTICO COMPLETO DEL MODELO GLTF");
 
-      let totalVertices = 0;
-      let totalTriangles = 0;
       let meshCount = 0;
-      let materialCount = Object.keys(materials || {}).length;
-      let textureCount = 0;
+
       let largestMesh = { vertices: 0, name: "", triangles: 0 };
-      let problemMeshes = [];
-      let textureMemory = 0;
 
       // Análisis detallado por mesh
       scene.traverse((child) => {
@@ -109,9 +104,6 @@ function ModeloGLB({ url = "/ok.glb", onModelReady, ...props }) {
               triangles = vertices / 3;
             }
 
-            totalVertices += vertices;
-            totalTriangles += triangles;
-
             // Encontrar el mesh más grande
             if (vertices > largestMesh.vertices) {
               largestMesh = {
@@ -123,115 +115,9 @@ function ModeloGLB({ url = "/ok.glb", onModelReady, ...props }) {
           }
 
           // Analizar materiales y texturas por mesh
-          if (child.material) {
-            const material = child.material;
-
-            // Contar texturas y calcular memoria estimada
-            Object.keys(material).forEach((key) => {
-              if (material[key] && material[key].isTexture) {
-                textureCount++;
-                const texture = material[key];
-
-                // Estimar memoria de textura (aproximado)
-                if (texture.image) {
-                  const width = texture.image.width || 1024;
-                  const height = texture.image.height || 1024;
-                  textureMemory += (width * height * 4) / (1024 * 1024); // MB aproximados
-                }
-              }
-            });
-          }
         }
       });
 
-      // Análisis de vértices
-      if (totalVertices > 150000) {
-        console.error(
-          `   🔴 CRÍTICO: Demasiados vértices (${totalVertices.toLocaleString()})`
-        );
-        console.error(`   💡 SOLUCIÓN URGENTE: Reducir a < 50,000 vértices`);
-        console.error(
-          `   🛠️  CÓMO: Blender > Modifier > Decimate (Ratio: 0.3)`
-        );
-      } else if (totalVertices > 75000) {
-        console.warn(
-          `   🟡 ALTO: Muchos vértices (${totalVertices.toLocaleString()})`
-        );
-        console.warn(
-          `   💡 Recomendado: Reducir a < 50,000 para mejor FPS móvil`
-        );
-      } else {
-        console.log(`   ✅ Vértices OK (${totalVertices.toLocaleString()})`);
-      }
-
-      // Análisis de triángulos
-      if (totalTriangles > 100000) {
-        console.error(
-          `   🔴 CRÍTICO: Demasiados triángulos (${Math.round(
-            totalTriangles
-          ).toLocaleString()})`
-        );
-        console.error(`   💡 SOLUCIÓN: Simplificar geometría urgentemente`);
-      } else if (totalTriangles > 50000) {
-        console.warn(
-          `   🟡 ALTO: Muchos triángulos (${Math.round(
-            totalTriangles
-          ).toLocaleString()})`
-        );
-      } else {
-        console.log(
-          `   ✅ Triángulos OK (${Math.round(totalTriangles).toLocaleString()})`
-        );
-      }
-
-      // Análisis de materiales
-      if (materialCount > 15) {
-        console.warn(
-          `   🟡 Muchos materiales (${materialCount}). Combinar en atlas de texturas`
-        );
-        console.warn(
-          `   🛠️  CÓMO: Blender > UV Editing > Combinar texturas en una sola imagen`
-        );
-      } else {
-        console.log(`   ✅ Materiales OK (${materialCount})`);
-      }
-
-      // Análisis de texturas
-      if (textureMemory > 50) {
-        console.warn(
-          `   🟡 Memoria de texturas alta (${textureMemory.toFixed(1)} MB)`
-        );
-        console.warn(`   💡 Comprimir texturas o reducir resolución`);
-      } else {
-        console.log(
-          `   ✅ Memoria texturas OK (${textureMemory.toFixed(1)} MB)`
-        );
-      }
-
-      // Reporte de meshes problemáticos
-      if (problemMeshes.length > 0) {
-        console.log(`\n🚨 MESHES PROBLEMÁTICOS:`);
-        problemMeshes.forEach((mesh) => {
-          console.warn(
-            `   ${mesh.severity === "CRÍTICO" ? "🔴" : "🟡"} "${
-              mesh.name
-            }": ${mesh.vertices.toLocaleString()} vértices, ${mesh.triangles.toLocaleString()} triángulos`
-          );
-        });
-        console.warn(`   💡 Enfócate en simplificar estos meshes primero`);
-      }
-
-      // Recomendaciones generales
-      console.log(`\n💡 RECOMENDACIONES PARA OPTIMIZAR:`);
-      console.log(`   1. 🎯 Objetivo: < 50,000 vértices totales`);
-      console.log(`   2. 🛠️  Herramienta: Blender Decimate Modifier`);
-      console.log(
-        `   3. 📦 Alternativa: Crear versiones LOD (baja/media/alta calidad)`
-      );
-      console.log(`   4. 🖼️  Texturas: Usar formatos comprimidos (WebP, AVIF)`);
-      console.log(`   5. 🎨 Materiales: Combinar similares en atlas`);
-
-      console.groupEnd();
       setIsProcessed(true);
 
       // Notificar que el modelo está listo
