@@ -6,6 +6,7 @@ import {
   Preload,
   Stats,
   useProgress,
+  Sky,
 } from "@react-three/drei";
 import { ScrollWaypointCamera2 } from "./scroll1";
 import BackToHome from "./BackToHome";
@@ -119,16 +120,6 @@ function ModeloGLB({ url = "/ok.glb", onModelReady, ...props }) {
                 name: meshName,
               };
             }
-
-            // Detectar meshes problemáticos
-            if (vertices > 15000) {
-              problemMeshes.push({
-                name: meshName,
-                vertices,
-                triangles: Math.round(triangles),
-                severity: vertices > 30000 ? "CRÍTICO" : "ALTO",
-              });
-            }
           }
 
           // Analizar materiales y texturas por mesh
@@ -152,29 +143,6 @@ function ModeloGLB({ url = "/ok.glb", onModelReady, ...props }) {
           }
         }
       });
-
-      // Resultados del análisis
-      console.log(`� ESTADÍSTICAS GENERALES:`);
-      console.log(`   • Meshes: ${meshCount}`);
-      console.log(`   • Vértices totales: ${totalVertices.toLocaleString()}`);
-      console.log(
-        `   • Triángulos totales: ${Math.round(
-          totalTriangles
-        ).toLocaleString()}`
-      );
-      console.log(`   • Materiales: ${materialCount}`);
-      console.log(`   • Texturas: ${textureCount}`);
-      console.log(
-        `   • Memoria estimada texturas: ${textureMemory.toFixed(1)} MB`
-      );
-      console.log(
-        `   • Mesh más grande: "${
-          largestMesh.name
-        }" (${largestMesh.vertices.toLocaleString()} vértices, ${largestMesh.triangles.toLocaleString()} triángulos)`
-      );
-
-      // Análisis de rendimiento con recomendaciones específicas
-      console.log(`\n⚠️  ANÁLISIS DE RENDIMIENTO:`);
 
       // Análisis de vértices
       if (totalVertices > 150000) {
@@ -544,7 +512,6 @@ export default function VisorGLB() {
 
   // Preload y cleanup optimizado
   useEffect(() => {
-    // Precargar el modelo
     useGLTF.preload("/ok.glb");
 
     return () => {
@@ -661,6 +628,7 @@ export default function VisorGLB() {
         <Stats />
 
         <Suspense fallback={null}>
+          <Sky />
           <ModeloGLB onModelReady={() => setIsModelReady(true)} />
         </Suspense>
 
