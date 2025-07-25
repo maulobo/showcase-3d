@@ -3,6 +3,7 @@ import Home from "./components/Home";
 import Departamento from "./components/departamento";
 import Edificio from "./components/edificio";
 import "./App.css";
+import Edf from "./components/Edf";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/departamento" element={<Departamento />} />
         <Route path="/edificio" element={<Edificio />} />
+        <Route path="/edf" element={<Edf />} />
       </Routes>
     </Router>
   );

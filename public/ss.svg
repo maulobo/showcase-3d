@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 842 913">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #8fcfe5;
+      }
+    </style>
+  </defs>
+  <g id="Capa_1" data-name="Capa 1">
+    <image width="842" height="913" xlink:href="C:\Users\Usuario\Downloads\edificio.png"/>
+  </g>
+  <g id="Capa_2" data-name="Capa 2">
+    <rect class="cls-1" x="412.22" y="217.28" width="95.78" height="37.56" rx="3.44" ry="3.44"/>
+    <rect class="cls-1" x="577.89" y="217.28" width="137.33" height="37.56" rx="3.44" ry="3.44"/>
+  </g>
+  <g id="Capa_3" data-name="Capa 3">
+    <rect class="cls-1" x="412.22" y="167.94" width="95.78" height="37.56" rx="3.44" ry="3.44"/>
+    <rect class="cls-1" x="577.89" y="167.94" width="137.33" height="37.56" rx="3.44" ry="3.44"/>
+  </g>
+</svg>
